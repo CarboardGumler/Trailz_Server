@@ -146,7 +146,37 @@ class ServerManager():
            
         else:
             return False
+     
+    def get_users_trails(self,username):
+        trail_ids = []
+        trail_time = {}
+        self.curs.execute(f'SELECT username FROM users_data')
+        users = self.curs.fetchall()
+        users = [i[0] for i in users]
+        if username in users:
+            self.curs.execute(f'SELECT trail_id,trail_name FROM trail_data')
+            trail_ids = self.curs.fetchall()
         
+            for id in trail_ids:
+                self.curs.execute(f'SELECT run_time,username FROM leaderboard_{id[0]}')
+                data = self.curs.fetchall()
+                for i in data:
+                    if i[1] == username:
+                        trail_time[id[1]] = i[0]
+        return trail_time
+    
+    def get_trail(self,trail_name):
+        self.curs.execute('SELECT trail_name,email,distance,start_date,start_lat,start_lon,trail_id,description FROM trail_data')
+        trail_list = self.curs.fetchall()
+        for trail in trail_list:
+            if trail[0] == trail_name:
+                break
+        if trail[0] != trail_name:
+            return []
+        self.curs.execute(f'SELECT username FROM users_data WHERE email = "{trail[1]}"')
+        trail = list(trail)
+        trail.append(self.curs.fetchall()[0][0])
+        return trail
         
 MainManager = ServerManager()
 
@@ -156,7 +186,7 @@ def post_add_trail(trail_name,distance,date,start_lat,start_lon,description,emai
     if request.method == 'POST':
         if MainManager.login(email,password):
             json_file = request.files["file"]
-            
+        
             if MainManager.add_trail(distance,date,start_lat,start_lon,trail_name,email,description) == True:
                 json_file.save(f'{os.getcwd()}/saved_trails/{trail_name}_{email}.json')
                 return "True"
@@ -186,6 +216,12 @@ def post_load_rerun(email,password,trail_id):
             public_trail.save(f"{os.getcwd()}/public_trail.json")
             MainManager.check_rerun(email,trail_id)
 
+@app.route("/get_profile/<username>")
+def get_profile(username):
+    global MainManager
+    return MainManager.get_users_trails(username)
+    
+
 @app.route("/get_leaderboard/<trail_id>")
 def get_leaderboard(trail_id):
     global MainManager
@@ -195,8 +231,11 @@ def get_leaderboard(trail_id):
         leaderboard = []
     return {"data" : leaderboard}
 
+@app.route("/get_trail/<trail_name>")
+def get_trail(trail_name):
+    return {"data" : MainManager.get_trail(trail_name)}
 
 MainManager.sign_up("test","test","test")
+#app.run(host=MainManager.BASE_IP,debug=True)
 
-
-app.run(host=MainManager.BASE_IP,debug=True)
+#test
