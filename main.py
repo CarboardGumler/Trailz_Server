@@ -176,6 +176,8 @@ class ServerManager():
         self.curs.execute(f'SELECT username FROM users_data WHERE email = "{trail[1]}"')
         trail = list(trail)
         trail.append(self.curs.fetchall()[0][0])
+        
+        trail = {"trail_name":trail[0],"email" : trail[1], "distance" : trail[2], "start_date" : trail[3],"start_lat":trail[4], "start_lon":trail[5],"description" : trail[6], "username": trail[7] }
         return trail
         
 MainManager = ServerManager()
@@ -235,6 +237,7 @@ def get_leaderboard(trail_id):
 def get_trail(trail_name):
     return {"data" : MainManager.get_trail(trail_name)}
 
+MainManager.get_trail("class")
 MainManager.sign_up("test","test","test")
 #app.run(host=MainManager.BASE_IP,debug=True)
 
