@@ -176,8 +176,7 @@ class ServerManager():
         self.curs.execute(f'SELECT username FROM users_data WHERE email = "{trail[1]}"')
         trail = list(trail)
         trail.append(self.curs.fetchall()[0][0])
-        
-        trail = {"trail_name":trail[0],"email" : trail[1], "distance" : trail[2], "start_date" : trail[3],"start_lat":trail[4], "start_lon":trail[5],"description" : trail[6], "username": trail[7] }
+        trail = {"trail_name":trail[0],"email" : trail[1], "distance" : trail[2], "start_date" : trail[3],"start_lat":trail[4], "start_lon":trail[5],"trail_id": trail[6], "description" : trail[7], "username": trail[8]}
         return trail
     
     def get_trail_file(self,trail_id):
@@ -246,7 +245,10 @@ def get_leaderboard(trail_id):
 
 @app.route("/get_trail/<trail_name>")
 def get_trail(trail_name):
-    return {"data" : MainManager.get_trail(trail_name)}
+    print(trail_name)
+    data = MainManager.get_trail(trail_name)
+    print(data)
+    return {"data" : data}
 
 @app.route("/get_trail_file/<trail_id>")
 def get_trail_file(trail_id):
@@ -255,9 +257,8 @@ def get_trail_file(trail_id):
     except:
         {"data":{}}
 
-
-MainManager.get_trail_file("30")
+MainManager.get_trail("class")
 MainManager.sign_up("test","test","test")
-#app.run(host=MainManager.BASE_IP,debug=True)
+app.run(host=MainManager.BASE_IP,debug=True)
 
 #test
