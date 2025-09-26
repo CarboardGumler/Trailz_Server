@@ -117,13 +117,14 @@ class ServerManager():
             return trail_list[:(page + 1    ) * trails_per_page]
         
     def get_leaderboard(self,trail_id,page):
+        page = int(page)
         trails_per_page = 1
-        self.curs.execute(f'SELECT usernmae, run_time FROM leaderboard_{trail_id} ORDER BY run_time')
+        self.curs.execute(f'SELECT username, run_time FROM leaderboard_{trail_id} ORDER BY run_time')
         user_list = self.curs.fetchall()
         main_tail_list = []
         for i in range(len(user_list)):
             user_list[i] = list(user_list[i])
-        
+        print(type(page))
         if page * trails_per_page > (len(user_list)):
             return user_list
         if page != 0:
@@ -234,13 +235,10 @@ def get_profile(username):
     return MainManager.get_users_trails(username)
     
 
-@app.route("/get_leaderboard/<trail_id>")
-def get_leaderboard(trail_id):
+@app.route("/get_leaderboard/<trail_id>/<page>")
+def get_leaderboard(trail_id,page):
     global MainManager
-    try:
-        leaderboard = MainManager.get_leaderboard(trail_id)
-    except:
-        leaderboard = []
+    leaderboard = MainManager.get_leaderboard(trail_id,page)
     return {"data" : leaderboard}
 
 @app.route("/get_trail/<trail_name>")
@@ -257,7 +255,7 @@ def get_trail_file(trail_id):
     except:
         {"data":{}}
 
-MainManager.get_trail("class")
+
 MainManager.sign_up("test","test","test")
 app.run(host=MainManager.BASE_IP,debug=True)
 
