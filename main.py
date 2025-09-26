@@ -143,7 +143,7 @@ class ServerManager():
         data = process_trail_validation(trail_json,rerun_json)[0]
         if data  == True:
            self.add_rerun(email,trail_json["name"],data[1])
-           
+            
         else:
             return False
      
@@ -179,6 +179,17 @@ class ServerManager():
         
         trail = {"trail_name":trail[0],"email" : trail[1], "distance" : trail[2], "start_date" : trail[3],"start_lat":trail[4], "start_lon":trail[5],"description" : trail[6], "username": trail[7] }
         return trail
+    
+    def get_trail_file(self,trail_id):
+        self.curs.execute(f'SELECT trail_name,email FROM trail_data WHERE trail_id = "{trail_id}"')
+        data =  self.curs.fetchall()
+        if data != []:
+            trail_name,email = self.curs.fetchall()[0]
+            with open(f'{os.getcwd()}/saved_trails/{trail_name}_{email}.json') as file:
+                main_json = json.load(file)
+            return main_json
+            print(main_json)
+        return {}
         
 MainManager = ServerManager()
 
@@ -237,7 +248,15 @@ def get_leaderboard(trail_id):
 def get_trail(trail_name):
     return {"data" : MainManager.get_trail(trail_name)}
 
-MainManager.get_trail("class")
+@app.route("/get_trail_file/<trail_id>")
+def get_trail_file(trail_id):
+    try:
+        return {"data":MainManager.get_trail_file(trail_id)}
+    except:
+        {"data":{}}
+
+
+MainManager.get_trail_file("30")
 MainManager.sign_up("test","test","test")
 #app.run(host=MainManager.BASE_IP,debug=True)
 
